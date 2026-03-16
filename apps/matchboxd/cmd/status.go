@@ -71,7 +71,7 @@ func (m statusModel) View() string {
 		Padding(1, 2).
 		MarginTop(1)
 
-	content := titleStyle.Render("🔥 Matchbox Daemon Status") + "\n\n" +
+	content := titleStyle.Render("🔥 Crackerbox Daemon Status") + "\n\n" +
 		labelStyle.Render("Version:") + valueStyle.Render(m.version) + "\n" +
 		labelStyle.Render("Platform:") + valueStyle.Render(m.platform) + "\n" +
 		labelStyle.Render("KVM:") + valueStyle.Render(kvmStatus) + "\n" +
@@ -86,7 +86,7 @@ func (m statusModel) View() string {
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show daemon and system status",
-	Long:  `Displays the current status of the matchboxd daemon and system capabilities.`,
+	Long:  `Displays the current status of the crackerboxd daemon and system capabilities.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		p := tea.NewProgram(initialStatusModel())
 		if _, err := p.Run(); err != nil {

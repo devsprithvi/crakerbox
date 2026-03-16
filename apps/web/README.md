@@ -1,15 +1,17 @@
-# web
+# Crackerbox Web
 
-To install dependencies:
+Landing page and install script server for Crackerbox.
+
+## Development
 
 ```bash
 bun install
+bun run dev
 ```
 
-To run:
+Opens at [http://localhost:3000](http://localhost:3000)
 
-```bash
-bun run index.ts
-```
+## Deployment
 
-This project was created using `bun init` in bun v1.3.9. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+This app is deployed to **Cloudflare Pages** via GitHub Actions on push to `main`.
+The site is a static `index.html` — no build step required.

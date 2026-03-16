@@ -3,110 +3,354 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matchbox — Firecracker Control Plane</title>
-    <meta name="description" content="Matchbox is a lightweight control plane for Firecracker microVMs. Get started in seconds.">
+    <title>Crackerbox — Firecracker Control Plane</title>
+    <meta name="description" content="Crackerbox is a lightweight control plane for Firecracker microVMs. Provision, manage, and orchestrate microVMs in seconds.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #09090b;
+            --surface: #111113;
+            --border: #1e1e22;
+            --border-hover: #2a2a30;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-muted: #52525b;
+            --accent: #f97316;
+            --accent-dim: #ea580c;
+            --accent-glow: rgba(249, 115, 22, 0.12);
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
-            background: #0a0a0a;
-            color: #e0e0e0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Nav --- */
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.25rem 2rem;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(9, 9, 11, 0.85);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-icon {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 400;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--text-primary); }
+
+        .nav-btn {
+            background: var(--text-primary);
+            color: var(--bg);
+            border: none;
+            padding: 0.5rem 1.1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .nav-btn:hover { opacity: 0.85; }
+
+        /* --- Hero --- */
+        .hero {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-        }
-        .container {
-            max-width: 640px;
-            padding: 2rem;
             text-align: center;
+            padding: 6rem 2rem 4rem;
+            max-width: 720px;
+            margin: 0 auto;
         }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--accent-glow);
+            border: 1px solid rgba(249, 115, 22, 0.2);
+            color: var(--accent);
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.35rem 0.85rem;
+            border-radius: 999px;
+            margin-bottom: 2rem;
+            letter-spacing: 0.02em;
+        }
+
+        .badge::before { content: '🔥'; }
+
         h1 {
-            font-size: 2.5rem;
-            color: #ff6600;
-            margin-bottom: 0.5rem;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
         }
-        h1 span { color: #666; font-weight: 300; }
-        .tagline {
-            color: #666;
-            font-size: 1rem;
-            margin-bottom: 2rem;
+
+        h1 span { color: var(--text-muted); font-weight: 300; }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 520px;
+            margin-bottom: 2.5rem;
         }
+
+        /* --- Install Block --- */
         .install-block {
-            background: #111;
-            border: 1px solid #222;
-            border-radius: 8px;
-            padding: 1.25rem 1.5rem;
+            width: 100%;
+            max-width: 540px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 3.5rem;
+            transition: border-color 0.2s;
+        }
+
+        .install-block:hover { border-color: var(--border-hover); }
+
+        .install-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            overflow: hidden;
+        }
+
+        .prompt {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .install-cmd {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .copy-btn {
+            flex-shrink: 0;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            color: var(--text-primary);
+            border-color: var(--border-hover);
+        }
+
+        .copy-btn.copied {
+            color: #22c55e;
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        /* --- Features Grid --- */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            width: 100%;
+            max-width: 540px;
+        }
+
+        .feature {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
             text-align: left;
-            position: relative;
-            margin-bottom: 2rem;
+            transition: border-color 0.2s;
         }
-        .install-block code {
-            font-family: 'SF Mono', 'Fira Code', monospace;
-            font-size: 0.9rem;
-            color: #ff6600;
-            word-break: break-all;
-        }
-        .install-block .label {
-            font-size: 0.7rem;
-            color: #444;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 0.5rem;
+
+        .feature:hover { border-color: var(--border-hover); }
+
+        .feature-icon {
+            font-size: 1.2rem;
+            margin-bottom: 0.6rem;
             display: block;
         }
-        .copy-btn {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            background: #222;
-            border: 1px solid #333;
-            color: #888;
-            padding: 0.3rem 0.6rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.7rem;
-        }
-        .copy-btn:hover { color: #ff6600; border-color: #ff6600; }
-        .features {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            text-align: left;
-            color: #555;
+
+        .feature-title {
             font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 0.3rem;
         }
-        .features div::before {
-            content: '→ ';
-            color: #ff6600;
+
+        .feature-desc {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.5;
         }
-        .footer {
-            margin-top: 3rem;
-            color: #333;
+
+        /* --- Footer --- */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-muted);
             font-size: 0.75rem;
+        }
+
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        footer a:hover { color: var(--text-primary); }
+
+        /* --- Responsive --- */
+        @media (max-width: 600px) {
+            nav { padding: 1rem; }
+            .nav-links { display: none; }
+            .hero { padding: 4rem 1.5rem 3rem; }
+            .features { grid-template-columns: 1fr; }
+            .install-cmd { font-size: 0.72rem; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>matchbox <span>v0.1</span></h1>
-        <p class="tagline">Firecracker control plane for your servers</p>
+    <nav>
+        <div class="logo">
+            <div class="logo-icon">🔥</div>
+            crackerbox
+        </div>
+        <ul class="nav-links">
+            <li><a href="https://github.com/devsprithvi/crakerbox" target="_blank">GitHub</a></li>
+            <li><a href="https://github.com/devsprithvi/crakerbox#readme" target="_blank">Docs</a></li>
+        </ul>
+        <a href="https://github.com/devsprithvi/crakerbox" class="nav-btn" target="_blank">Get Started</a>
+    </nav>
 
-        <div class="install-block">
-            <span class="label">Quick Install</span>
-            <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -sL https://get.matchbox.dev/install.sh | sudo bash')">copy</button>
-            <code>curl -sL https://get.matchbox.dev/install.sh | sudo bash</code>
+    <main class="hero">
+        <div class="badge">v0.1.0 — Early Preview</div>
+
+        <h1>crackerbox</h1>
+        <p class="subtitle">
+            A lightweight control plane for Firecracker microVMs.
+            Provision, manage, and orchestrate virtual machines on bare metal — in seconds.
+        </p>
+
+        <div class="install-block" id="install-block">
+            <div class="install-left">
+                <span class="prompt">$</span>
+                <span class="install-cmd">curl -sL https://get.crackerbox.dev/install.sh | sudo bash</span>
+            </div>
+            <button class="copy-btn" id="copy-btn" onclick="copyInstall()">Copy</button>
         </div>
 
         <div class="features">
-            <div>Checks hardware virtualization (/dev/kvm)</div>
-            <div>Downloads matchboxd binary to /usr/local/bin</div>
-            <div>Installs Firecracker hypervisor automatically</div>
-            <div>Creates /var/lib/matchbox directory structure</div>
+            <div class="feature">
+                <span class="feature-icon">⚡</span>
+                <div class="feature-title">KVM Detection</div>
+                <div class="feature-desc">Auto-checks hardware virtualisation and /dev/kvm availability.</div>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">📦</span>
+                <div class="feature-title">One-Line Install</div>
+                <div class="feature-desc">Downloads crackerboxd and Firecracker in a single script.</div>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🖥️</span>
+                <div class="feature-title">TUI Dashboard</div>
+                <div class="feature-desc">Rich terminal interface powered by Bubble Tea and Lip Gloss.</div>
+            </div>
+            <div class="feature">
+                <span class="feature-icon">🌐</span>
+                <div class="feature-title">GUI Dashboard</div>
+                <div class="feature-desc">Native desktop UI via Wails for visual VM management.</div>
+            </div>
         </div>
+    </main>
 
-        <p class="footer">© matchbox — open source</p>
-    </div>
+    <footer>
+        <p>© 2026 crackerbox · <a href="https://github.com/devsprithvi/crakerbox" target="_blank">Source</a></p>
+    </footer>
+
+    <script>
+        function copyInstall() {
+            const cmd = 'curl -sL https://get.crackerbox.dev/install.sh | sudo bash';
+            navigator.clipboard.writeText(cmd).then(() => {
+                const btn = document.getElementById('copy-btn');
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 </html>

@@ -8,9 +8,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "matchboxd",
-	Short: "Matchbox Daemon — Firecracker VM Control Plane",
-	Long: `matchboxd is the daemon binary for the Matchbox platform.
+	Use:   "crackerboxd",
+	Short: "Crackerbox Daemon — Firecracker VM Control Plane",
+	Long: `crackerboxd is the daemon binary for the Crackerbox platform.
 It manages Firecracker microVM lifecycles, handles orchestration,
 and provides both a CLI and GUI interface for server management.`,
 }

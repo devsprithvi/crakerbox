@@ -1,12 +1,12 @@
 #!/bin/bash
 set -e
 
-# Matchbox Installer
-# Usage: curl -sL https://get.matchbox.dev/install.sh | sudo bash
+# Crackerbox Installer
+# Usage: curl -sL https://get.crackerbox.dev/install.sh | sudo bash
 
-MATCHBOX_VERSION="0.1.0"
+CRACKERBOX_VERSION="0.1.0"
 INSTALL_DIR="/usr/local/bin"
-DATA_DIR="/var/lib/matchbox"
+DATA_DIR="/var/lib/crackerbox"
 FIRECRACKER_VERSION="1.10.1"
 
 RED='\033[0;31m'
@@ -14,13 +14,13 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-info()  { echo -e "${GREEN}[matchbox]${NC} $1"; }
-warn()  { echo -e "${YELLOW}[matchbox]${NC} $1"; }
-error() { echo -e "${RED}[matchbox]${NC} $1"; exit 1; }
+info()  { echo -e "${GREEN}[crackerbox]${NC} $1"; }
+warn()  { echo -e "${YELLOW}[crackerbox]${NC} $1"; }
+error() { echo -e "${RED}[crackerbox]${NC} $1"; exit 1; }
 
 # --- Pre-flight checks ---
 
-info "Matchbox Installer v${MATCHBOX_VERSION}"
+info "Crackerbox Installer v${CRACKERBOX_VERSION}"
 echo ""
 
 # Check root
@@ -30,7 +30,7 @@ fi
 
 # Check Linux
 if [ "$(uname -s)" != "Linux" ]; then
-    error "Matchbox requires Linux (detected: $(uname -s))"
+    error "Crackerbox requires Linux (detected: $(uname -s))"
 fi
 
 # Check architecture
@@ -48,13 +48,13 @@ if [ ! -e /dev/kvm ]; then
 fi
 info "✅ KVM available"
 
-# --- Download matchboxd ---
+# --- Download crackerboxd ---
 
-info "Downloading matchboxd binary..."
-MATCHBOX_URL="https://github.com/matchbox-platform/matchbox/releases/download/v${MATCHBOX_VERSION}/matchboxd-linux-${ARCH}"
+info "Downloading crackerboxd binary..."
+CRACKERBOX_URL="https://github.com/devsprithvi/crakerbox/releases/download/v${CRACKERBOX_VERSION}/crackerboxd-linux-${ARCH}"
 # TODO: Replace with actual download URL when releases are published
-# curl -sL "$MATCHBOX_URL" -o "${INSTALL_DIR}/matchboxd"
-# chmod +x "${INSTALL_DIR}/matchboxd"
+# curl -sL "$CRACKERBOX_URL" -o "${INSTALL_DIR}/crackerboxd"
+# chmod +x "${INSTALL_DIR}/crackerboxd"
 warn "⚠️  Binary download not yet available (placeholder)"
 
 # --- Download Firecracker ---
@@ -82,15 +82,15 @@ info "✅ Created ${DATA_DIR}"
 
 echo ""
 info "════════════════════════════════════════"
-info "  Matchbox installed successfully! 🔥"
+info "  Crackerbox installed successfully! 🔥"
 info "════════════════════════════════════════"
 echo ""
-info "  Binary:      ${INSTALL_DIR}/matchboxd"
+info "  Binary:      ${INSTALL_DIR}/crackerboxd"
 info "  Firecracker: ${INSTALL_DIR}/firecracker"
 info "  Data dir:    ${DATA_DIR}"
 echo ""
 info "  Get started:"
-info "    matchboxd serve    # Start the daemon"
-info "    matchboxd status   # Check system status"
-info "    matchboxd ui       # Open the dashboard"
+info "    crackerboxd serve    # Start the daemon"
+info "    crackerboxd status   # Check system status"
+info "    crackerboxd ui       # Open the dashboard"
 echo ""

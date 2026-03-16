@@ -2,7 +2,7 @@ package main
 
 import (
 	"embed"
-	"matchboxd/cmd"
+	"crackerboxd/cmd"
 )
 
 //go:embed all:frontend/dist

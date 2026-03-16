@@ -15,13 +15,13 @@ var Assets embed.FS
 
 var uiCmd = &cobra.Command{
 	Use:   "ui",
-	Short: "Launch the Matchbox dashboard UI",
-	Long:  `Opens the Matchbox graphical dashboard powered by Wails.`,
+	Short: "Launch the Crackerbox dashboard UI",
+	Long:  `Opens the Crackerbox graphical dashboard powered by Wails.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		app := NewDashboardApp()
 
 		err := wails.Run(&options.App{
-			Title:  "Matchbox Dashboard",
+			Title:  "Crackerbox Dashboard",
 			Width:  1280,
 			Height: 800,
 			AssetServer: &assetserver.Options{

@@ -15,4 +15,4 @@ const server = Bun.serve({
   },
 });
 
-console.log(`🔥 Matchbox web → http://localhost:${server.port}`);
+console.log(`🔥 Crackerbox web → http://localhost:${server.port}`);
