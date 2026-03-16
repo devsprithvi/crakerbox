@@ -1,0 +1,9 @@
+{
+  "name": "matchbox-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun --hot serve.ts",
+    "build": "echo 'Static site — no build needed'"
+  }
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matchbox — Firecracker Control Plane</title>
+    <meta name="description" content="Matchbox is a lightweight control plane for Firecracker microVMs. Get started in seconds.">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            max-width: 640px;
+            padding: 2rem;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #ff6600;
+            margin-bottom: 0.5rem;
+        }
+        h1 span { color: #666; font-weight: 300; }
+        .tagline {
+            color: #666;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+        .install-block {
+            background: #111;
+            border: 1px solid #222;
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .install-block code {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #ff6600;
+            word-break: break-all;
+        }
+        .install-block .label {
+            font-size: 0.7rem;
+            color: #444;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: #222;
+            border: 1px solid #333;
+            color: #888;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+        }
+        .copy-btn:hover { color: #ff6600; border-color: #ff6600; }
+        .features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: left;
+            color: #555;
+            font-size: 0.85rem;
+        }
+        .features div::before {
+            content: '→ ';
+            color: #ff6600;
+        }
+        .footer {
+            margin-top: 3rem;
+            color: #333;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>matchbox <span>v0.1</span></h1>
+        <p class="tagline">Firecracker control plane for your servers</p>
+
+        <div class="install-block">
+            <span class="label">Quick Install</span>
+            <button class="copy-btn" onclick="navigator.clipboard.writeText('curl -sL https://get.matchbox.dev/install.sh | sudo bash')">copy</button>
+            <code>curl -sL https://get.matchbox.dev/install.sh | sudo bash</code>
+        </div>
+
+        <div class="features">
+            <div>Checks hardware virtualization (/dev/kvm)</div>
+            <div>Downloads matchboxd binary to /usr/local/bin</div>
+            <div>Installs Firecracker hypervisor automatically</div>
+            <div>Creates /var/lib/matchbox directory structure</div>
+        </div>
+
+        <p class="footer">© matchbox — open source</p>
+    </div>
+</body>
+</html>
