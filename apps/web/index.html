@@ -12,6 +12,7 @@
         :root {
             --bg: #09090b;
             --surface: #111113;
+            --surface-2: #18181b;
             --border: #1e1e22;
             --border-hover: #2a2a30;
             --text-primary: #fafafa;
@@ -20,6 +21,12 @@
             --accent: #f97316;
             --accent-dim: #ea580c;
             --accent-glow: rgba(249, 115, 22, 0.12);
+            --green: #22c55e;
+            --green-dim: rgba(34, 197, 94, 0.12);
+            --blue: #3b82f6;
+            --blue-dim: rgba(59, 130, 246, 0.12);
+            --purple: #a855f7;
+            --purple-dim: rgba(168, 85, 247, 0.12);
             --radius: 12px;
             --radius-sm: 8px;
         }
@@ -35,6 +42,19 @@
             flex-direction: column;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* --- Animated Background --- */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(249, 115, 22, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(249, 115, 22, 0.03) 1px, transparent 1px);
+            background-size: 64px 64px;
+            pointer-events: none;
+            z-index: 0;
+            mask-image: radial-gradient(ellipse 60% 50% at 50% 0%, black 40%, transparent 100%);
         }
 
         /* --- Nav --- */
@@ -104,7 +124,6 @@
 
         /* --- Hero --- */
         .hero {
-            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -113,6 +132,8 @@
             padding: 6rem 2rem 4rem;
             max-width: 720px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
         .badge {
@@ -254,6 +275,237 @@
             line-height: 1.5;
         }
 
+        /* --- Architecture Section --- */
+        .section {
+            position: relative;
+            z-index: 1;
+            padding: 4rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .architecture {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .arch-layer {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: border-color 0.3s;
+        }
+
+        .arch-layer:hover { border-color: var(--border-hover); }
+
+        .arch-layer-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .arch-layer-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .arch-layer-icon.manager { background: var(--purple-dim); }
+        .arch-layer-icon.daemon { background: var(--accent-glow); }
+        .arch-layer-icon.cli { background: var(--blue-dim); }
+
+        .arch-layer-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .arch-layer-role {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .arch-layer-desc {
+            font-size: 0.82rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .arch-layer-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .arch-meta-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .arch-meta-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .arch-meta-dot.purple { background: var(--purple); }
+        .arch-meta-dot.orange { background: var(--accent); }
+        .arch-meta-dot.blue { background: var(--blue); }
+
+        /* --- Download Section --- */
+        .downloads {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .download-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            opacity: 0;
+            transition: opacity 0.25s;
+        }
+
+        .download-card:hover {
+            border-color: var(--border-hover);
+            transform: translateY(-2px);
+        }
+
+        .download-card:hover::before { opacity: 1; }
+
+        .download-card.daemon::before { background: linear-gradient(90deg, var(--accent), var(--accent-dim)); }
+        .download-card.manager::before { background: linear-gradient(90deg, var(--purple), #7c3aed); }
+
+        .download-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .download-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .download-label {
+            font-size: 0.68rem;
+            font-weight: 500;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .download-label.daemon {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .download-label.manager {
+            background: var(--purple-dim);
+            color: var(--purple);
+        }
+
+        .download-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 1.25rem;
+        }
+
+        .download-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .download-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.85rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.78rem;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+
+        .download-link:hover {
+            border-color: var(--border-hover);
+            color: var(--text-primary);
+        }
+
+        .download-link-arch {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .download-link-icon {
+            font-size: 0.9rem;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .download-link:hover .download-link-icon { opacity: 1; }
+
+        /* --- Divider --- */
+        .divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 0 auto;
+            max-width: 800px;
+            width: calc(100% - 4rem);
+        }
+
         /* --- Footer --- */
         footer {
             text-align: center;
@@ -261,6 +513,8 @@
             border-top: 1px solid var(--border);
             color: var(--text-muted);
             font-size: 0.75rem;
+            position: relative;
+            z-index: 1;
         }
 
         footer a {
@@ -276,17 +530,22 @@
             .nav-links { display: none; }
             .hero { padding: 4rem 1.5rem 3rem; }
             .features { grid-template-columns: 1fr; }
+            .downloads { grid-template-columns: 1fr; }
             .install-cmd { font-size: 0.72rem; }
         }
     </style>
 </head>
 <body>
+    <div class="bg-grid"></div>
+
     <nav>
         <div class="logo">
             <div class="logo-icon">🔥</div>
             crackerbox
         </div>
         <ul class="nav-links">
+            <li><a href="#architecture">Architecture</a></li>
+            <li><a href="#downloads">Downloads</a></li>
             <li><a href="https://github.com/devsprithvi/crakerbox" target="_blank">GitHub</a></li>
             <li><a href="https://github.com/devsprithvi/crakerbox#readme" target="_blank">Docs</a></li>
         </ul>
@@ -319,7 +578,7 @@
             <div class="feature">
                 <span class="feature-icon">📦</span>
                 <div class="feature-title">One-Line Install</div>
-                <div class="feature-desc">Downloads crackerboxd and Firecracker in a single script.</div>
+                <div class="feature-desc">Downloads crackerboxd, manager, and Firecracker in a single script.</div>
             </div>
             <div class="feature">
                 <span class="feature-icon">🖥️</span>
@@ -328,11 +587,148 @@
             </div>
             <div class="feature">
                 <span class="feature-icon">🌐</span>
-                <div class="feature-title">GUI Dashboard</div>
-                <div class="feature-desc">Native desktop UI via Wails for visual VM management.</div>
+                <div class="feature-title">Cluster Orchestration</div>
+                <div class="feature-desc">Manage fleets of microVMs across multiple nodes from one place.</div>
             </div>
         </div>
     </main>
+
+    <hr class="divider">
+
+    <!-- Architecture Section -->
+    <section class="section" id="architecture">
+        <h2 class="section-title">Two-Layer Architecture</h2>
+        <p class="section-subtitle">Node-level daemon + cluster-level orchestrator</p>
+
+        <div class="architecture">
+            <div class="arch-layer">
+                <div class="arch-layer-header">
+                    <div class="arch-layer-icon manager">🎯</div>
+                    <div>
+                        <div class="arch-layer-name">crackerbox-manager</div>
+                        <div class="arch-layer-role">Cluster Orchestrator</div>
+                    </div>
+                </div>
+                <div class="arch-layer-desc">
+                    Multi-node cluster orchestrator. Manages multiple crackerboxd nodes, schedules workloads,
+                    monitors health, and provides a unified API for fleet management.
+                </div>
+                <div class="arch-layer-meta">
+                    <span class="arch-meta-item"><span class="arch-meta-dot purple"></span> :9090</span>
+                    <span class="arch-meta-item">REST API</span>
+                    <span class="arch-meta-item">Go</span>
+                </div>
+            </div>
+
+            <div style="text-align:center; color: var(--text-muted); font-size: 1.2rem; padding: 0.25rem 0;">↕</div>
+
+            <div class="arch-layer">
+                <div class="arch-layer-header">
+                    <div class="arch-layer-icon daemon">🔥</div>
+                    <div>
+                        <div class="arch-layer-name">crackerboxd</div>
+                        <div class="arch-layer-role">Node Daemon</div>
+                    </div>
+                </div>
+                <div class="arch-layer-desc">
+                    Single-node daemon that directly manages Firecracker microVM lifecycles.
+                    Talks to the Firecracker API via unix socket, provides TUI &amp; GUI dashboards.
+                </div>
+                <div class="arch-layer-meta">
+                    <span class="arch-meta-item"><span class="arch-meta-dot orange"></span> :8090</span>
+                    <span class="arch-meta-item">Firecracker API</span>
+                    <span class="arch-meta-item">Go + Wails</span>
+                </div>
+            </div>
+
+            <div style="text-align:center; color: var(--text-muted); font-size: 1.2rem; padding: 0.25rem 0;">↕</div>
+
+            <div class="arch-layer">
+                <div class="arch-layer-header">
+                    <div class="arch-layer-icon cli">⌨️</div>
+                    <div>
+                        <div class="arch-layer-name">crackerbox</div>
+                        <div class="arch-layer-role">CLI Tool</div>
+                    </div>
+                </div>
+                <div class="arch-layer-desc">
+                    Command-line interface for interacting with the cluster. Install via <code>go install</code>,
+                    manage VMs, inspect nodes, and configure infrastructure.
+                </div>
+                <div class="arch-layer-meta">
+                    <span class="arch-meta-item"><span class="arch-meta-dot blue"></span> go install</span>
+                    <span class="arch-meta-item">Cobra CLI</span>
+                    <span class="arch-meta-item">Go</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- Download Section -->
+    <section class="section" id="downloads">
+        <h2 class="section-title">Downloads</h2>
+        <p class="section-subtitle">Pre-built binaries from GitHub Releases</p>
+
+        <div class="downloads">
+            <div class="download-card daemon">
+                <div class="download-card-header">
+                    <div>
+                        <div class="download-name">crackerboxd</div>
+                    </div>
+                    <span class="download-label daemon">Daemon</span>
+                </div>
+                <div class="download-desc">
+                    Node-level daemon. Deploy on every bare-metal server that will run Firecracker microVMs.
+                </div>
+                <div class="download-links">
+                    <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerboxd-linux-amd64"
+                       class="download-link" id="download-daemon-amd64">
+                        <span>crackerboxd-linux-amd64</span>
+                        <span class="download-link-arch">x86_64 ↓</span>
+                    </a>
+                    <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerboxd-linux-arm64"
+                       class="download-link" id="download-daemon-arm64">
+                        <span>crackerboxd-linux-arm64</span>
+                        <span class="download-link-arch">aarch64 ↓</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="download-card manager">
+                <div class="download-card-header">
+                    <div>
+                        <div class="download-name">crackerbox-manager</div>
+                    </div>
+                    <span class="download-label manager">Orchestrator</span>
+                </div>
+                <div class="download-desc">
+                    Cluster orchestrator. Run one instance to manage your entire fleet of crackerboxd nodes.
+                </div>
+                <div class="download-links">
+                    <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerbox-manager-linux-amd64"
+                       class="download-link" id="download-manager-amd64">
+                        <span>crackerbox-manager-linux-amd64</span>
+                        <span class="download-link-arch">x86_64 ↓</span>
+                    </a>
+                    <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerbox-manager-linux-arm64"
+                       class="download-link" id="download-manager-arm64">
+                        <span>crackerbox-manager-linux-arm64</span>
+                        <span class="download-link-arch">aarch64 ↓</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <a href="https://github.com/devsprithvi/crakerbox/releases" target="_blank"
+               style="color: var(--text-muted); font-size: 0.8rem; text-decoration: none; transition: color 0.2s;"
+               onmouseover="this.style.color='var(--text-secondary)'" onmouseout="this.style.color='var(--text-muted)'">
+                View all releases on GitHub →
+            </a>
+        </div>
+    </section>
 
     <footer>
         <p>© 2026 crackerbox · <a href="https://github.com/devsprithvi/crakerbox" target="_blank">Source</a></p>
@@ -351,6 +747,20 @@
                 }, 2000);
             });
         }
+
+        // Auto-detect platform and highlight the right download
+        (function() {
+            // On Linux, highlight the matching arch
+            // This is informational only since we can't truly detect from browser
+            const links = document.querySelectorAll('.download-link');
+            links.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Let the browser handle the download naturally
+                    const filename = this.querySelector('span:first-child').textContent;
+                    console.log('Downloading:', filename);
+                });
+            });
+        })();
     </script>
 </body>
 </html>

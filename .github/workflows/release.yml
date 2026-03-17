@@ -1,0 +1,130 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  GO_VERSION: '1.24'
+
+jobs:
+  release-binaries:
+    name: Build & Release Binaries
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - app: matchboxd
+            binary: crackerboxd
+            dir: apps/matchboxd
+            ldflags_pkg: crackerboxd/cmd
+          - app: manager
+            binary: crackerbox-manager
+            dir: apps/manager
+            ldflags_pkg: github.com/devsprithvi/crakerbox/apps/manager/cmd
+          - app: cli
+            binary: crackerbox
+            dir: apps/cli
+            ldflags_pkg: github.com/devsprithvi/crakerbox/apps/cli/cmd
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Get version info
+        id: version
+        run: |
+          echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          echo "COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      - name: Build linux/amd64
+        working-directory: ${{ matrix.dir }}
+        env:
+          GOOS: linux
+          GOARCH: amd64
+          CGO_ENABLED: 0
+        run: |
+          go build -ldflags "\
+            -s -w \
+            -X ${{ matrix.ldflags_pkg }}.Version=${{ steps.version.outputs.VERSION }} \
+            -X ${{ matrix.ldflags_pkg }}.GitCommit=${{ steps.version.outputs.COMMIT }} \
+            -X ${{ matrix.ldflags_pkg }}.BuildDate=${{ steps.version.outputs.DATE }}" \
+            -o ${{ matrix.binary }}-linux-amd64 .
+
+      - name: Build linux/arm64
+        working-directory: ${{ matrix.dir }}
+        env:
+          GOOS: linux
+          GOARCH: arm64
+          CGO_ENABLED: 0
+        run: |
+          go build -ldflags "\
+            -s -w \
+            -X ${{ matrix.ldflags_pkg }}.Version=${{ steps.version.outputs.VERSION }} \
+            -X ${{ matrix.ldflags_pkg }}.GitCommit=${{ steps.version.outputs.COMMIT }} \
+            -X ${{ matrix.ldflags_pkg }}.BuildDate=${{ steps.version.outputs.DATE }}" \
+            -o ${{ matrix.binary }}-linux-arm64 .
+
+      - name: Generate checksums
+        working-directory: ${{ matrix.dir }}
+        run: |
+          sha256sum ${{ matrix.binary }}-linux-* > ${{ matrix.binary }}-checksums.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary }}-binaries
+          path: |
+            ${{ matrix.dir }}/${{ matrix.binary }}-linux-*
+            ${{ matrix.dir }}/${{ matrix.binary }}-checksums.txt
+
+  create-release:
+    name: Create GitHub Release
+    needs: release-binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: List release assets
+        run: find release-assets -type f | sort
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release-assets/**/*
+          body: |
+            ## 🔥 Crackerbox ${{ github.ref_name }}
+
+            ### Downloads
+
+            | Binary | Linux amd64 | Linux arm64 |
+            |--------|-------------|-------------|
+            | **crackerboxd** (daemon) | `crackerboxd-linux-amd64` | `crackerboxd-linux-arm64` |
+            | **crackerbox-manager** (orchestrator) | `crackerbox-manager-linux-amd64` | `crackerbox-manager-linux-arm64` |
+            | **crackerbox** (CLI) | `crackerbox-linux-amd64` | `crackerbox-linux-arm64` |
+
+            ### Quick Install
+            ```bash
+            curl -sL https://get.crackerbox.dev/install.sh | sudo bash
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
