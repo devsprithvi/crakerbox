@@ -120,7 +120,7 @@ jobs:
         with:
           tag_name: dev-latest
           name: "🔥 Development Build"
-          prerelease: true I
+          prerelease: true
           make_latest: false
           files: dist/*
           body: |
@@ -140,10 +140,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # --- Deploy website on every develop push ---
-      - name: Deploy website to Cloudflare Pages
-        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-        run: npx -y wrangler pages deploy apps/web --project-name=crackerbox
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+  # ===========================================================================
+  #  Deploy website (delegates to the reusable deploy-web.yml workflow)
+  # ===========================================================================
+  deploy-website:
+    name: "🌐 Deploy Website"
+    needs: build
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    uses: ./.github/workflows/deploy-web.yml
+    with:
+      environment: "preview"
+      commit_sha: ${{ github.sha }}
+    secrets:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
