@@ -120,7 +120,7 @@ jobs:
         with:
           tag_name: dev-latest
           name: "🔥 Development Build"
-          prerelease: true
+          prerelease: true I
           make_latest: false
           files: dist/*
           body: |

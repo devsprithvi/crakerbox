@@ -171,29 +171,57 @@
             margin-bottom: 2.5rem;
         }
 
-        /* --- Install Block --- */
-        .install-block {
+        /* --- Install Blocks --- */
+        .install-blocks {
             width: 100%;
             max-width: 540px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            margin-bottom: 3.5rem;
+        }
+
+        .install-block {
+            width: 100%;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 1rem 1.25rem;
+            padding: 0.85rem 1.25rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            margin-bottom: 3.5rem;
             transition: border-color 0.2s;
         }
 
         .install-block:hover { border-color: var(--border-hover); }
+
+        .install-label {
+            font-size: 0.65rem;
+            font-weight: 500;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            flex-shrink: 0;
+        }
+
+        .install-label.daemon {
+            background: var(--accent-glow);
+            color: var(--accent);
+        }
+
+        .install-label.manager {
+            background: var(--purple-dim);
+            color: var(--purple);
+        }
 
         .install-left {
             display: flex;
             align-items: center;
             gap: 0.75rem;
             overflow: hidden;
+            min-width: 0;
         }
 
         .prompt {
@@ -206,7 +234,7 @@
 
         .install-cmd {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             color: var(--text-secondary);
             white-space: nowrap;
             overflow: hidden;
@@ -576,12 +604,23 @@
             Provision, manage, and orchestrate virtual machines on bare metal — in seconds.
         </p>
 
-        <div class="install-block" id="install-block">
-            <div class="install-left">
-                <span class="prompt">$</span>
-                <span class="install-cmd">curl -sL https://get.crackerbox.dev/install.sh | sudo bash</span>
+        <div class="install-blocks">
+            <div class="install-block" id="install-block-daemon">
+                <span class="install-label daemon">Daemon</span>
+                <div class="install-left">
+                    <span class="prompt">$</span>
+                    <span class="install-cmd" id="install-cmd-daemon">curl -sL .../install-daemon.sh | sudo bash</span>
+                </div>
+                <button class="copy-btn" data-target="daemon" onclick="copyInstall('daemon')">Copy</button>
             </div>
-            <button class="copy-btn" id="copy-btn" onclick="copyInstall()">Copy</button>
+            <div class="install-block" id="install-block-manager">
+                <span class="install-label manager">Manager</span>
+                <div class="install-left">
+                    <span class="prompt">$</span>
+                    <span class="install-cmd" id="install-cmd-manager">curl -sL .../install-manager.sh | sudo bash</span>
+                </div>
+                <button class="copy-btn" data-target="manager" onclick="copyInstall('manager')">Copy</button>
+            </div>
         </div>
 
         <div class="features">
@@ -686,14 +725,12 @@
                 <div class="download-desc">
                     Node-level daemon with built-in CLI. Deploy on every bare-metal server that will run Firecracker microVMs.
                 </div>
-                <div class="download-links">
-                    <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerboxd-linux-amd64"
-                       class="download-link" id="download-daemon-amd64">
+                <div class="download-links" id="download-links-daemon">
+                    <a href="#" class="download-link" id="download-daemon-amd64">
                         <span>crackerboxd-linux-amd64</span>
                         <span class="download-link-arch">x86_64 ↓</span>
                     </a>
-                    <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerboxd-linux-arm64"
-                       class="download-link" id="download-daemon-arm64">
+                    <a href="#" class="download-link" id="download-daemon-arm64">
                         <span>crackerboxd-linux-arm64</span>
                         <span class="download-link-arch">aarch64 ↓</span>
                     </a>
@@ -710,14 +747,12 @@
                 <div class="download-desc">
                     Cluster orchestrator with built-in CLI. Run one instance to manage your entire fleet of crackerboxd nodes.
                 </div>
-                <div class="download-links">
-                    <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerbox-manager-linux-amd64"
-                       class="download-link" id="download-manager-amd64">
+                <div class="download-links" id="download-links-manager">
+                    <a href="#" class="download-link" id="download-manager-amd64">
                         <span>crackerbox-manager-linux-amd64</span>
                         <span class="download-link-arch">x86_64 ↓</span>
                     </a>
-                    <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerbox-manager-linux-arm64"
-                       class="download-link" id="download-manager-arm64">
+                    <a href="#" class="download-link" id="download-manager-arm64">
                         <span>crackerbox-manager-linux-arm64</span>
                         <span class="download-link-arch">aarch64 ↓</span>
                     </a>
@@ -739,10 +774,43 @@
     </footer>
 
     <script>
-        function copyInstall() {
-            const cmd = 'curl -sL https://get.crackerbox.dev/install.sh | sudo bash';
+        // Derive all URLs from the current site origin
+        const SITE_ORIGIN = window.location.origin;
+        const GITHUB_RELEASES = 'https://github.com/devsprithvi/crakerbox/releases';
+        const RELEASE_DL = GITHUB_RELEASES + '/latest/download';
+
+        // --- Populate install commands dynamically ---
+        (function initInstallCmds() {
+            const daemonCmd = `curl -sL ${SITE_ORIGIN}/install-daemon.sh | sudo bash`;
+            const managerCmd = `curl -sL ${SITE_ORIGIN}/install-manager.sh | sudo bash`;
+
+            document.getElementById('install-cmd-daemon').textContent = daemonCmd;
+            document.getElementById('install-cmd-manager').textContent = managerCmd;
+        })();
+
+        // --- Populate download links dynamically ---
+        (function initDownloadLinks() {
+            const daemonFiles = {
+                'download-daemon-amd64': `${RELEASE_DL}/crackerboxd-linux-amd64`,
+                'download-daemon-arm64': `${RELEASE_DL}/crackerboxd-linux-arm64`,
+            };
+            const managerFiles = {
+                'download-manager-amd64': `${RELEASE_DL}/crackerbox-manager-linux-amd64`,
+                'download-manager-arm64': `${RELEASE_DL}/crackerbox-manager-linux-arm64`,
+            };
+
+            Object.assign(daemonFiles, managerFiles);
+            for (const [id, url] of Object.entries(daemonFiles)) {
+                const el = document.getElementById(id);
+                if (el) el.href = url;
+            }
+        })();
+
+        // --- Copy install command ---
+        function copyInstall(type) {
+            const cmd = document.getElementById('install-cmd-' + type).textContent;
             navigator.clipboard.writeText(cmd).then(() => {
-                const btn = document.getElementById('copy-btn');
+                const btn = document.querySelector(`.copy-btn[data-target="${type}"]`);
                 btn.textContent = 'Copied!';
                 btn.classList.add('copied');
                 setTimeout(() => {
@@ -751,17 +819,6 @@
                 }, 2000);
             });
         }
-
-        // Auto-detect platform and highlight the right download
-        (function() {
-            const links = document.querySelectorAll('.download-link');
-            links.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    const filename = this.querySelector('span:first-child').textContent;
-                    console.log('Downloading:', filename);
-                });
-            });
-        })();
     </script>
 </body>
 </html>

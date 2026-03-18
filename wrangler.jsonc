@@ -3,8 +3,5 @@
   // Root-level config so Cloudflare's dashboard auto-deploy finds it
   "name": "crackerbox",
   "compatibility_date": "2026-03-18",
-  "pages_build_output_dir": "./apps/web",
-  "assets": {
-    "directory": "./apps/web"
-  }
+  "pages_build_output_dir": "./apps/web"
 }
