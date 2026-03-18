@@ -7,6 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	cfgFile  string
+	logLevel string
+)
+
 var rootCmd = &cobra.Command{
 	Use:   "crackerbox-manager",
 	Short: "Crackerbox Manager — Firecracker Cluster Orchestrator",
@@ -20,10 +25,12 @@ Architecture:
                              ──► crackerboxd (node 2)
                              ──► crackerboxd (node N)
 
-Get started:
+Quick start:
   crackerbox-manager serve       Start the orchestrator
   crackerbox-manager status      Show cluster status
-  crackerbox-manager nodes       List registered nodes`,
+  crackerbox-manager nodes       List registered nodes
+  crackerbox-manager version     Print version information
+  crackerbox-manager update      Self-update to latest release`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -38,5 +45,7 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "/etc/crackerbox/manager.yaml", "Config file path")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "Log level (debug, info, warn, error)")
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }

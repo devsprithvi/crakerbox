@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"runtime"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,11 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version of crackerboxd",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("crackerboxd %s (commit: %s, built: %s)\n", Version, GitCommit, BuildDate)
+		fmt.Printf("crackerboxd %s\n", Version)
+		fmt.Printf("  commit:   %s\n", GitCommit)
+		fmt.Printf("  built:    %s\n", BuildDate)
+		fmt.Printf("  go:       %s\n", runtime.Version())
+		fmt.Printf("  platform: %s/%s\n", runtime.GOOS, runtime.GOARCH)
 	},
 }
 
