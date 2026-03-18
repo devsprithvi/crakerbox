@@ -7,14 +7,14 @@
 ```
                   ┌─────────────────────────┐
                   │   crackerbox-manager     │  ← Cluster Orchestrator (:9090)
-                  │   Fleet API, Scheduling  │
+                  │   Fleet API, Scheduling  │     Built-in CLI
                   └────────┬────────────────┘
                            │
               ┌────────────┼────────────────┐
               │            │                │
         ┌─────┴─────┐ ┌───┴───────┐ ┌──────┴────┐
         │crackerboxd│ │crackerboxd│ │crackerboxd │  ← Node Daemons (:8090)
-        │  Node 1   │ │  Node 2   │ │  Node N    │
+        │  Node 1   │ │  Node 2   │ │  Node N    │     Built-in CLI + TUI
         └───────────┘ └───────────┘ └────────────┘
               │            │                │
         ┌─────┴─────┐ ┌───┴───────┐ ┌──────┴────┐
@@ -23,6 +23,11 @@
         └───────────┘ └───────────┘ └────────────┘
 ```
 
+Two binaries, each with a built-in CLI:
+
+- **`crackerboxd`** — Node daemon. Manages Firecracker VMs on a single host. Includes TUI dashboard and GUI via Wails.
+- **`crackerbox-manager`** — Cluster orchestrator. Manages multiple crackerboxd nodes, schedules workloads, monitors health.
+
 ## Repository Structure
 
 ```
@@ -30,8 +35,7 @@ crackerbox/
 ├── apps/
 │   ├── web/              # Landing page & install script (Cloudflare Pages)
 │   ├── matchboxd/        # Daemon binary (Go + Cobra + Wails)
-│   ├── manager/          # Cluster orchestrator (Go + Cobra)
-│   └── cli/              # CLI package (Go, go install-able)
+│   └── manager/          # Cluster orchestrator (Go + Cobra)
 ├── .github/
 │   └── workflows/
 │       ├── build.yml     # CI — build & test all apps
@@ -56,10 +60,9 @@ curl -sL https://get.crackerbox.dev/install.sh | sudo bash
 # Build everything
 make build
 
-# Individual apps
+# Individual binaries
 make build-daemon     # → bin/crackerboxd
 make build-manager    # → bin/crackerbox-manager
-make build-cli        # → bin/crackerbox
 
 # Run tests
 make test
@@ -68,13 +71,12 @@ make test
 cd apps/web && bun install && bun run dev
 ```
 
-## Apps
+## Binaries
 
 | App | Binary | Role | Port |
 |-----|--------|------|------|
-| **matchboxd** | `crackerboxd` | Node-level daemon — manages Firecracker VMs on a single host | `:8090` |
-| **manager** | `crackerbox-manager` | Cluster-level orchestrator — manages multiple nodes | `:9090` |
-| **cli** | `crackerbox` | CLI tool for interacting with the cluster | — |
+| **matchboxd** | `crackerboxd` | Node-level daemon with CLI + TUI — manages Firecracker VMs on a single host | `:8090` |
+| **manager** | `crackerbox-manager` | Cluster-level orchestrator with CLI — manages multiple nodes | `:9090` |
 | **web** | — | Landing page + install script | Cloudflare Pages |
 
 ## CI/CD
@@ -83,7 +85,7 @@ cd apps/web && bun install && bun run dev
 |----------|---------|--------|
 | `build.yml` | Push / PR to `main`, `develop` | Build & test all Go apps |
 | `release.yml` | Push tag `v*` | Cross-compile linux/amd64+arm64, create GitHub Release |
-| `deploy-web.yml` | Push to `main` (apps/web changes) | Deploy to Cloudflare Pages |
+| `deploy-web.yml` | Push to `develop` (apps/web changes) | Deploy to Cloudflare Pages |
 
 ### Creating a Release
 

@@ -27,10 +27,6 @@ jobs:
             binary: crackerbox-manager
             dir: apps/manager
             ldflags_pkg: github.com/devsprithvi/crakerbox/apps/manager/cmd
-          - app: cli
-            binary: crackerbox
-            dir: apps/cli
-            ldflags_pkg: github.com/devsprithvi/crakerbox/apps/cli/cmd
     steps:
       - uses: actions/checkout@v4
         with:
@@ -126,7 +122,6 @@ jobs:
             |--------|-------------|-------------|
             | **crackerboxd** (daemon) | `crackerboxd-linux-amd64` | `crackerboxd-linux-arm64` |
             | **crackerbox-manager** (orchestrator) | `crackerbox-manager-linux-amd64` | `crackerbox-manager-linux-arm64` |
-            | **crackerbox** (CLI) | `crackerbox-linux-amd64` | `crackerbox-linux-arm64` |
 
             ### Quick Install
             ```bash

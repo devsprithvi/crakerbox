@@ -336,7 +336,6 @@
 
         .arch-layer-icon.manager { background: var(--purple-dim); }
         .arch-layer-icon.daemon { background: var(--accent-glow); }
-        .arch-layer-icon.cli { background: var(--blue-dim); }
 
         .arch-layer-name {
             font-weight: 600;
@@ -358,6 +357,7 @@
             display: flex;
             gap: 1.5rem;
             margin-top: 0.75rem;
+            flex-wrap: wrap;
         }
 
         .arch-meta-item {
@@ -378,7 +378,22 @@
 
         .arch-meta-dot.purple { background: var(--purple); }
         .arch-meta-dot.orange { background: var(--accent); }
-        .arch-meta-dot.blue { background: var(--blue); }
+
+        /* --- CLI inline tag --- */
+        .cli-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 0.15rem 0.45rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
 
         /* --- Download Section --- */
         .downloads {
@@ -598,24 +613,29 @@
     <!-- Architecture Section -->
     <section class="section" id="architecture">
         <h2 class="section-title">Two-Layer Architecture</h2>
-        <p class="section-subtitle">Node-level daemon + cluster-level orchestrator</p>
+        <p class="section-subtitle">Node-level daemon + cluster-level orchestrator — each with a built-in CLI</p>
 
         <div class="architecture">
             <div class="arch-layer">
                 <div class="arch-layer-header">
                     <div class="arch-layer-icon manager">🎯</div>
                     <div>
-                        <div class="arch-layer-name">crackerbox-manager</div>
+                        <div class="arch-layer-name">
+                            crackerbox-manager
+                            <span class="cli-tag">⌨ built-in CLI</span>
+                        </div>
                         <div class="arch-layer-role">Cluster Orchestrator</div>
                     </div>
                 </div>
                 <div class="arch-layer-desc">
                     Multi-node cluster orchestrator. Manages multiple crackerboxd nodes, schedules workloads,
                     monitors health, and provides a unified API for fleet management.
+                    Includes built-in commands for node discovery, cluster status, and configuration.
                 </div>
                 <div class="arch-layer-meta">
                     <span class="arch-meta-item"><span class="arch-meta-dot purple"></span> :9090</span>
                     <span class="arch-meta-item">REST API</span>
+                    <span class="arch-meta-item">Cobra CLI</span>
                     <span class="arch-meta-item">Go</span>
                 </div>
             </div>
@@ -626,39 +646,23 @@
                 <div class="arch-layer-header">
                     <div class="arch-layer-icon daemon">🔥</div>
                     <div>
-                        <div class="arch-layer-name">crackerboxd</div>
+                        <div class="arch-layer-name">
+                            crackerboxd
+                            <span class="cli-tag">⌨ built-in CLI</span>
+                        </div>
                         <div class="arch-layer-role">Node Daemon</div>
                     </div>
                 </div>
                 <div class="arch-layer-desc">
                     Single-node daemon that directly manages Firecracker microVM lifecycles.
                     Talks to the Firecracker API via unix socket, provides TUI &amp; GUI dashboards.
+                    Includes built-in commands for node status, VM management, and diagnostics.
                 </div>
                 <div class="arch-layer-meta">
                     <span class="arch-meta-item"><span class="arch-meta-dot orange"></span> :8090</span>
                     <span class="arch-meta-item">Firecracker API</span>
-                    <span class="arch-meta-item">Go + Wails</span>
-                </div>
-            </div>
-
-            <div style="text-align:center; color: var(--text-muted); font-size: 1.2rem; padding: 0.25rem 0;">↕</div>
-
-            <div class="arch-layer">
-                <div class="arch-layer-header">
-                    <div class="arch-layer-icon cli">⌨️</div>
-                    <div>
-                        <div class="arch-layer-name">crackerbox</div>
-                        <div class="arch-layer-role">CLI Tool</div>
-                    </div>
-                </div>
-                <div class="arch-layer-desc">
-                    Command-line interface for interacting with the cluster. Install via <code>go install</code>,
-                    manage VMs, inspect nodes, and configure infrastructure.
-                </div>
-                <div class="arch-layer-meta">
-                    <span class="arch-meta-item"><span class="arch-meta-dot blue"></span> go install</span>
                     <span class="arch-meta-item">Cobra CLI</span>
-                    <span class="arch-meta-item">Go</span>
+                    <span class="arch-meta-item">Go + Wails</span>
                 </div>
             </div>
         </div>
@@ -680,7 +684,7 @@
                     <span class="download-label daemon">Daemon</span>
                 </div>
                 <div class="download-desc">
-                    Node-level daemon. Deploy on every bare-metal server that will run Firecracker microVMs.
+                    Node-level daemon with built-in CLI. Deploy on every bare-metal server that will run Firecracker microVMs.
                 </div>
                 <div class="download-links">
                     <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerboxd-linux-amd64"
@@ -704,7 +708,7 @@
                     <span class="download-label manager">Orchestrator</span>
                 </div>
                 <div class="download-desc">
-                    Cluster orchestrator. Run one instance to manage your entire fleet of crackerboxd nodes.
+                    Cluster orchestrator with built-in CLI. Run one instance to manage your entire fleet of crackerboxd nodes.
                 </div>
                 <div class="download-links">
                     <a href="https://github.com/devsprithvi/crakerbox/releases/latest/download/crackerbox-manager-linux-amd64"
@@ -750,12 +754,9 @@
 
         // Auto-detect platform and highlight the right download
         (function() {
-            // On Linux, highlight the matching arch
-            // This is informational only since we can't truly detect from browser
             const links = document.querySelectorAll('.download-link');
             links.forEach(link => {
                 link.addEventListener('click', function(e) {
-                    // Let the browser handle the download naturally
                     const filename = this.querySelector('span:first-child').textContent;
                     console.log('Downloading:', filename);
                 });

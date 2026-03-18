@@ -42,7 +42,7 @@ jobs:
           <!DOCTYPE html><html><head><title>crackerboxd</title></head><body><p>Development build</p></body></html>
           EOF
 
-      # --- Build all binaries (linux/amd64 + linux/arm64) ---
+      # --- Build crackerboxd (linux/amd64 + linux/arm64) ---
       - name: Build crackerboxd (linux/amd64)
         working-directory: apps/matchboxd
         env: { GOOS: linux, GOARCH: amd64, CGO_ENABLED: '0' }
@@ -63,6 +63,7 @@ jobs:
             -X crackerboxd/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
             -o crackerboxd-linux-arm64 .
 
+      # --- Build crackerbox-manager (linux/amd64 + linux/arm64) ---
       - name: Build crackerbox-manager (linux/amd64)
         working-directory: apps/manager
         env: { GOOS: linux, GOARCH: amd64, CGO_ENABLED: '0' }
@@ -83,32 +84,11 @@ jobs:
             -X github.com/devsprithvi/crakerbox/apps/manager/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
             -o crackerbox-manager-linux-arm64 .
 
-      - name: Build crackerbox CLI (linux/amd64)
-        working-directory: apps/cli
-        env: { GOOS: linux, GOARCH: amd64, CGO_ENABLED: '0' }
-        run: |
-          go build -ldflags "-s -w \
-            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.Version=${{ steps.info.outputs.VERSION }} \
-            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.GitCommit=${{ steps.info.outputs.COMMIT }} \
-            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
-            -o crackerbox-linux-amd64 .
-
-      - name: Build crackerbox CLI (linux/arm64)
-        working-directory: apps/cli
-        env: { GOOS: linux, GOARCH: arm64, CGO_ENABLED: '0' }
-        run: |
-          go build -ldflags "-s -w \
-            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.Version=${{ steps.info.outputs.VERSION }} \
-            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.GitCommit=${{ steps.info.outputs.COMMIT }} \
-            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
-            -o crackerbox-linux-arm64 .
-
       # --- Tests ---
       - name: Test all
         run: |
           cd apps/matchboxd && go test ./... && cd ../..
           cd apps/manager && go test ./... && cd ../..
-          cd apps/cli && go test ./... && cd ../..
 
       # --- Checksums ---
       - name: Generate checksums
@@ -116,7 +96,6 @@ jobs:
           mkdir -p dist
           cp apps/matchboxd/crackerboxd-linux-* dist/
           cp apps/manager/crackerbox-manager-linux-* dist/
-          cp apps/cli/crackerbox-linux-* dist/
           cd dist && sha256sum * > checksums.txt
 
       # --- Upload as workflow artifacts (always) ---
@@ -151,6 +130,5 @@ jobs:
             |--------|-------------|-------------|
             | **crackerboxd** (daemon) | ✅ | ✅ |
             | **crackerbox-manager** (orchestrator) | ✅ | ✅ |
-            | **crackerbox** (CLI) | ✅ | ✅ |
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
