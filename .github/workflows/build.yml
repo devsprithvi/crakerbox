@@ -1,83 +1,156 @@
-name: Build & Test
+name: Build & Package
 
 on:
   push:
-    branches: [main, develop]
+    branches: [develop, main]
   pull_request:
-    branches: [main, develop]
+    branches: [develop, main]
 
 permissions:
-  contents: read
+  contents: write
+  packages: write
+
+env:
+  GO_VERSION: '1.24'
 
 jobs:
-  build-daemon:
-    name: Build crackerboxd
+  build:
+    name: Build & Package
     runs-on: ubuntu-latest
-    defaults:
-      run:
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Get build info
+        id: info
+        run: |
+          echo "COMMIT=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+          echo "VERSION=0.1.0-dev+$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      # crackerboxd needs frontend/dist for go:embed
+      - name: Scaffold matchboxd frontend placeholder
+        run: |
+          mkdir -p apps/matchboxd/frontend/dist
+          cat > apps/matchboxd/frontend/dist/index.html << 'EOF'
+          <!DOCTYPE html><html><head><title>crackerboxd</title></head><body><p>Development build</p></body></html>
+          EOF
+
+      # --- Build all binaries (linux/amd64 + linux/arm64) ---
+      - name: Build crackerboxd (linux/amd64)
         working-directory: apps/matchboxd
-    steps:
-      - uses: actions/checkout@v4
+        env: { GOOS: linux, GOARCH: amd64, CGO_ENABLED: '0' }
+        run: |
+          go build -ldflags "-s -w \
+            -X crackerboxd/cmd.Version=${{ steps.info.outputs.VERSION }} \
+            -X crackerboxd/cmd.GitCommit=${{ steps.info.outputs.COMMIT }} \
+            -X crackerboxd/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
+            -o crackerboxd-linux-amd64 .
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-          cache-dependency-path: apps/matchboxd/go.sum
+      - name: Build crackerboxd (linux/arm64)
+        working-directory: apps/matchboxd
+        env: { GOOS: linux, GOARCH: arm64, CGO_ENABLED: '0' }
+        run: |
+          go build -ldflags "-s -w \
+            -X crackerboxd/cmd.Version=${{ steps.info.outputs.VERSION }} \
+            -X crackerboxd/cmd.GitCommit=${{ steps.info.outputs.COMMIT }} \
+            -X crackerboxd/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
+            -o crackerboxd-linux-arm64 .
 
-      - name: Download dependencies
-        run: go mod download
-
-      - name: Build
-        run: go build -v -o crackerboxd .
-
-      - name: Test
-        run: go test -v ./...
-
-  build-manager:
-    name: Build crackerbox-manager
-    runs-on: ubuntu-latest
-    defaults:
-      run:
+      - name: Build crackerbox-manager (linux/amd64)
         working-directory: apps/manager
-    steps:
-      - uses: actions/checkout@v4
+        env: { GOOS: linux, GOARCH: amd64, CGO_ENABLED: '0' }
+        run: |
+          go build -ldflags "-s -w \
+            -X github.com/devsprithvi/crakerbox/apps/manager/cmd.Version=${{ steps.info.outputs.VERSION }} \
+            -X github.com/devsprithvi/crakerbox/apps/manager/cmd.GitCommit=${{ steps.info.outputs.COMMIT }} \
+            -X github.com/devsprithvi/crakerbox/apps/manager/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
+            -o crackerbox-manager-linux-amd64 .
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.24'
-          cache-dependency-path: apps/manager/go.sum
+      - name: Build crackerbox-manager (linux/arm64)
+        working-directory: apps/manager
+        env: { GOOS: linux, GOARCH: arm64, CGO_ENABLED: '0' }
+        run: |
+          go build -ldflags "-s -w \
+            -X github.com/devsprithvi/crakerbox/apps/manager/cmd.Version=${{ steps.info.outputs.VERSION }} \
+            -X github.com/devsprithvi/crakerbox/apps/manager/cmd.GitCommit=${{ steps.info.outputs.COMMIT }} \
+            -X github.com/devsprithvi/crakerbox/apps/manager/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
+            -o crackerbox-manager-linux-arm64 .
 
-      - name: Download dependencies
-        run: go mod download
-
-      - name: Build
-        run: go build -v -o crackerbox-manager .
-
-      - name: Test
-        run: go test -v ./...
-
-  build-cli:
-    name: Build crackerbox CLI
-    runs-on: ubuntu-latest
-    defaults:
-      run:
+      - name: Build crackerbox CLI (linux/amd64)
         working-directory: apps/cli
-    steps:
-      - uses: actions/checkout@v4
+        env: { GOOS: linux, GOARCH: amd64, CGO_ENABLED: '0' }
+        run: |
+          go build -ldflags "-s -w \
+            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.Version=${{ steps.info.outputs.VERSION }} \
+            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.GitCommit=${{ steps.info.outputs.COMMIT }} \
+            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
+            -o crackerbox-linux-amd64 .
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - name: Build crackerbox CLI (linux/arm64)
+        working-directory: apps/cli
+        env: { GOOS: linux, GOARCH: arm64, CGO_ENABLED: '0' }
+        run: |
+          go build -ldflags "-s -w \
+            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.Version=${{ steps.info.outputs.VERSION }} \
+            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.GitCommit=${{ steps.info.outputs.COMMIT }} \
+            -X github.com/devsprithvi/crakerbox/apps/cli/cmd.BuildDate=${{ steps.info.outputs.DATE }}" \
+            -o crackerbox-linux-arm64 .
+
+      # --- Tests ---
+      - name: Test all
+        run: |
+          cd apps/matchboxd && go test ./... && cd ../..
+          cd apps/manager && go test ./... && cd ../..
+          cd apps/cli && go test ./... && cd ../..
+
+      # --- Checksums ---
+      - name: Generate checksums
+        run: |
+          mkdir -p dist
+          cp apps/matchboxd/crackerboxd-linux-* dist/
+          cp apps/manager/crackerbox-manager-linux-* dist/
+          cp apps/cli/crackerbox-linux-* dist/
+          cd dist && sha256sum * > checksums.txt
+
+      # --- Upload as workflow artifacts (always) ---
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
-          go-version: '1.24'
-          cache-dependency-path: apps/cli/go.sum
+          name: crackerbox-dev-${{ steps.info.outputs.COMMIT }}
+          path: dist/
+          retention-days: 30
 
-      - name: Download dependencies
-        run: go mod download
+      # --- Create/update dev pre-release on every develop push ---
+      - name: Publish dev release
+        if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: dev-latest
+          name: "🔥 Development Build"
+          prerelease: true
+          make_latest: false
+          files: dist/*
+          body: |
+            ## Development Build
 
-      - name: Build
-        run: go build -v -o crackerbox .
+            ⚠️ **This is an automated dev build from the `develop` branch — not a stable release.**
 
-      - name: Test
-        run: go test -v ./...
+            **Commit:** `${{ steps.info.outputs.COMMIT }}`
+            **Built:** `${{ steps.info.outputs.DATE }}`
+
+            ### Binaries
+
+            | Binary | Linux amd64 | Linux arm64 |
+            |--------|-------------|-------------|
+            | **crackerboxd** (daemon) | ✅ | ✅ |
+            | **crackerbox-manager** (orchestrator) | ✅ | ✅ |
+            | **crackerbox** (CLI) | ✅ | ✅ |
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
