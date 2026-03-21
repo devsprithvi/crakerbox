@@ -1,101 +1,82 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"runtime"
+	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	"crackerboxd/pkg/api"
+	"crackerboxd/pkg/pki"
+
 	"github.com/spf13/cobra"
 )
 
-// --- Bubble Tea TUI Model ---
-
-type statusModel struct {
-	kvmAvailable bool
-	platform     string
-	version      string
-}
-
-func initialStatusModel() statusModel {
-	kvmAvail := false
-	if runtime.GOOS == "linux" {
-		if _, err := os.Stat("/dev/kvm"); err == nil {
-			kvmAvail = true
-		}
-	}
-
-	return statusModel{
-		kvmAvailable: kvmAvail,
-		platform:     runtime.GOOS + "/" + runtime.GOARCH,
-		version:      "0.1.0-dev",
-	}
-}
-
-func (m statusModel) Init() tea.Cmd {
-	return nil
-}
-
-func (m statusModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if msg.String() == "q" || msg.String() == "ctrl+c" {
-			return m, tea.Quit
-		}
-	}
-	return m, nil
-}
-
-func (m statusModel) View() string {
-	titleStyle := lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#FF6600")).
-		MarginBottom(1)
-
-	labelStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#888888")).
-		Width(20)
-
-	valueStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FFFFFF"))
-
-	kvmStatus := "❌ Not available"
-	if m.kvmAvailable {
-		kvmStatus = "✅ Available"
-	}
-
-	boxStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#FF6600")).
-		Padding(1, 2).
-		MarginTop(1)
-
-	content := titleStyle.Render("🔥 Crackerbox Daemon Status") + "\n\n" +
-		labelStyle.Render("Version:") + valueStyle.Render(m.version) + "\n" +
-		labelStyle.Render("Platform:") + valueStyle.Render(m.platform) + "\n" +
-		labelStyle.Render("KVM:") + valueStyle.Render(kvmStatus) + "\n" +
-		labelStyle.Render("Daemon:") + valueStyle.Render("● Not Running") + "\n\n" +
-		lipgloss.NewStyle().Foreground(lipgloss.Color("#555555")).Render("Press q to quit")
-
-	return boxStyle.Render(content)
-}
-
-// --- Cobra Command ---
+var (
+	statusDaemonAddr string
+	statusCertDir    string
+)
 
 var statusCmd = &cobra.Command{
 	Use:   "status",
 	Short: "Show daemon and system status",
 	Long:  `Displays the current status of the crackerboxd daemon and system capabilities.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		p := tea.NewProgram(initialStatusModel())
-		if _, err := p.Run(); err != nil {
-			fmt.Println("Error running status TUI:", err)
-			os.Exit(1)
+	RunE: func(cmd *cobra.Command, args []string) error {
+		fmt.Println()
+		fmt.Println("  🔥 Crackerbox Daemon Status")
+		fmt.Println("  ════════════════════════════════════")
+
+		// System info
+		fmt.Printf("  %-20s %s\n", "Version:", Version)
+		fmt.Printf("  %-20s %s/%s\n", "Platform:", runtime.GOOS, runtime.GOARCH)
+
+		// KVM check
+		kvmStatus := "❌ Not available"
+		if runtime.GOOS == "linux" {
+			if _, err := os.Stat("/dev/kvm"); err == nil {
+				kvmStatus = "✅ Available"
+			}
+		} else {
+			kvmStatus = "⚠  Not on Linux"
 		}
+		fmt.Printf("  %-20s %s\n", "KVM:", kvmStatus)
+
+		// Certs check
+		certsStatus := "❌ Not found"
+		if pki.CertsExist(statusCertDir) {
+			certsStatus = "✅ Present"
+		}
+		fmt.Printf("  %-20s %s (%s)\n", "Certificates:", certsStatus, statusCertDir)
+
+		// Try to connect to running daemon
+		fmt.Printf("  %-20s ", "Daemon:")
+		conn, err := dialDaemon(statusDaemonAddr, statusCertDir)
+		if err != nil {
+			fmt.Println("● Not reachable")
+		} else {
+			defer conn.Close()
+			client := api.NewDaemonServiceClient(conn)
+			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+
+			resp, err := client.Health(ctx, &api.HealthRequest{})
+			if err != nil {
+				fmt.Println("● Not responding")
+			} else {
+				fmt.Printf("✅ Online — %d VM(s), uptime %s\n", resp.VmCount, resp.Uptime)
+			}
+		}
+
+		fmt.Println("  ════════════════════════════════════")
+		fmt.Println()
+		return nil
 	},
 }
 
 func init() {
+	statusCmd.Flags().StringVar(&statusDaemonAddr, "daemon", "localhost:8090", "Daemon gRPC address")
+	statusCmd.Flags().StringVar(&statusCertDir, "cert-dir", pki.DefaultCertDir, "mTLS certificate directory")
+
 	rootCmd.AddCommand(statusCmd)
 }

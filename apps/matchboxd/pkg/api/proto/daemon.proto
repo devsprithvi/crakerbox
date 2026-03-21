@@ -1,0 +1,171 @@
+syntax = "proto3";
+
+package crackerbox.daemon.v1;
+
+option go_package = "crackerboxd/pkg/api/proto;daemonpb";
+
+// DaemonService is the gRPC API exposed by crackerboxd.
+// All methods require mutual TLS authentication.
+service DaemonService {
+  // Spawn starts a new Firecracker microVM.
+  rpc Spawn(SpawnRequest) returns (SpawnResponse);
+
+  // Terminate stops a running Firecracker microVM and cleans up resources.
+  rpc Terminate(TerminateRequest) returns (TerminateResponse);
+
+  // List returns all managed Firecracker processes.
+  rpc List(ListRequest) returns (ListResponse);
+
+  // Inspect returns detailed host-level information about a specific VM.
+  rpc Inspect(InspectRequest) returns (InspectResponse);
+
+  // Logs streams the process log file for a VM.
+  rpc Logs(LogsRequest) returns (stream LogsResponse);
+
+  // Metrics reads the latest process metrics for a VM.
+  rpc Metrics(MetricsRequest) returns (MetricsResponse);
+
+  // Call forwards a raw HTTP request to the VM's Firecracker API socket.
+  rpc Call(CallRequest) returns (CallResponse);
+
+  // Health returns the daemon's health status.
+  rpc Health(HealthRequest) returns (HealthResponse);
+}
+
+// --- Spawn ---
+
+message SpawnRequest {
+  // Path to a static JSON configuration file (mutually exclusive with dynamic fields).
+  string config_path = 1;
+
+  // Dynamic configuration (used if config_path is empty).
+  int32 vcpus = 2;
+  int32 memory_mib = 3;
+  string kernel_image_path = 4;
+  string root_drive_path = 5;
+  string kernel_args = 6;
+  string name = 7;
+  bool use_jailer = 8;
+  repeated NetworkInterfaceSpec network_interfaces = 9;
+}
+
+message NetworkInterfaceSpec {
+  string iface_id = 1;
+  string host_dev_name = 2;
+  string guest_mac = 3;
+  bool allow_mmds_requests = 4;
+}
+
+message SpawnResponse {
+  string id = 1;
+  string name = 2;
+  int32 pid = 3;
+  string socket_path = 4;
+  string state = 5;
+}
+
+// --- Terminate ---
+
+message TerminateRequest {
+  string id = 1;
+}
+
+message TerminateResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// --- List ---
+
+message ListRequest {
+  // Optional filter by state (e.g., "running", "stopped").
+  string state_filter = 1;
+}
+
+message ListResponse {
+  repeated VMEntry vms = 1;
+  int32 total = 2;
+}
+
+message VMEntry {
+  string id = 1;
+  string name = 2;
+  int32 pid = 3;
+  string state = 4;
+  string socket_path = 5;
+  string created_at = 6;
+  string uptime = 7;
+}
+
+// --- Inspect ---
+
+message InspectRequest {
+  string id = 1;
+}
+
+message InspectResponse {
+  string id = 1;
+  string name = 2;
+  int32 pid = 3;
+  string state = 4;
+  int32 vcpus = 5;
+  int32 memory_mib = 6;
+  string kernel_image = 7;
+  string root_drive = 8;
+  bool use_jailer = 9;
+  string socket_path = 10;
+  string log_path = 11;
+  string metrics_path = 12;
+  string work_dir = 13;
+  string created_at = 14;
+  string uptime = 15;
+  bool process_alive = 16;
+  bool socket_exists = 17;
+}
+
+// --- Logs ---
+
+message LogsRequest {
+  string id = 1;
+  bool follow = 2;
+}
+
+message LogsResponse {
+  bytes data = 1;
+}
+
+// --- Metrics ---
+
+message MetricsRequest {
+  string id = 1;
+}
+
+message MetricsResponse {
+  bytes data = 1;
+}
+
+// --- Call (Bridge) ---
+
+message CallRequest {
+  string id = 1;
+  string method = 2;   // HTTP method (GET, PUT, PATCH, etc.)
+  string path = 3;     // API endpoint path (e.g., /machine-config)
+  bytes body = 4;       // Optional request body
+}
+
+message CallResponse {
+  int32 status_code = 1;
+  bytes body = 2;
+  map<string, string> headers = 3;
+}
+
+// --- Health ---
+
+message HealthRequest {}
+
+message HealthResponse {
+  string status = 1;
+  string version = 2;
+  string uptime = 3;
+  int32 vm_count = 4;
+}
