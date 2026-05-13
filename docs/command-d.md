@@ -1,83 +1,82 @@
 USAGE:
-  crackerbox [command] [flags]
+  microd [command] [flags]
 
---- CLI MANAGEMENT COMMANDS ---
-  version     Print the current version of the CLI and daemon
-  update      Self-update the CLI binary
-  doctor      Check system readiness (Linux OS, KVM access, dependencies)
-  help        Display detailed help for any command
-  config      View or modify the global CLI settings
+GLOBAL FLAGS:
+  -c, --config      Path to daemon config file (Default: /etc/microd/config.yaml)
+      --log-level   Set logging verbosity: debug, info, warn, error (Default: info)
+  -h, --help        Show help for any command
 
-Commands:
-  # PROCESS MANAGEMENT (The Daemon's Core Job)
-  spawn --config <path>   # Starts the Firecracker process.
-  terminate <id>          # Kills the Firecracker process.
-  list                    # Shows all running Firecracker processes.
-  inspect <id>            # Shows host-level details (PID, paths, uptime).
+AUTHENTICATION COMMANDS:
+  login             Authenticate and register this host with the Central Manager.
+                    (Saves the Manager URI and NetBird Setup Key to the local SQLite DB)
+                    Flags:
+                      --token     The registration token provided by the Manager
+                      --manager   The URL of the Central Manager API
 
-  # TELEMETRY (Reading Files from Disk)
-  logs <id>               # Streams the process log file.
-  metrics <id>            # Reads the latest process metrics.
+  logout            Disconnect from the mesh, deregister from the Manager, and clear auth state.
 
-  # THE BRIDGE (User-Initiated API Access)
-  call <id> <method> <p>  # Forwards a request (e.g., GET /mmds) to the socket.
+DAEMON LIFECYCLE COMMANDS (Host Level):
+  server run        Run the daemon in the foreground (blocks terminal, logs to stdout).
+                    Flags:
+                      -p, --port  Override default API listening port
+                      -H, --host  Override default bind address
 
+  server start      Start the daemon intelligently in the background as a root process.
+                    Flags:
+                      -p, --port  Override default API listening port
+                      -H, --host  Override default bind address
 
+  server stop       Stop the background daemon gracefully (drains pending VM tasks).
+                    Flags:
+                      -f, --force    Hard kill (SIGKILL) immediately
+                      -t, --timeout  Seconds to wait before forcing (Default: 30s)
 
-COMMAND: spawn
+  server reload     Reload config.yaml without dropping the running process (SIGHUP).
 
-1. INPUT
-   - STATIC: User-provided JSON Configuration File.
-   - DYNAMIC: CLI Flags (CPU, RAM, Network, etc.) + Global Defaults.
+  server status     Check if the daemon is running, its PID, and NetBird connection state.
+                    Flags:
+                      --format    Output format (table, json, yaml. Default: table)
 
-2. PROCESSING (The Resolver)
-   - CONFIGURATION: Resolve the final Machine Specification (SDK Object).
-     - IF Static: Pass-through the provided JSON.
-     - IF Dynamic: Merge flags into the default template.
-   - PROVISIONING: Execute Host-Level Preparation.
-     - Dynamically allocate Host Resources (ID, Network Interfaces, Workspace).
-     - Map Host-Side artifacts to the SDK Configuration object.
-   - INITIATION: 
-     - Hand the resolved Configuration to the Go SDK.
-     - Start the Firecracker process (utilizing the --config-file exception).
+  doctor            Run pre-flight checks on the host OS (/dev/kvm, Firecracker binary, SQLite access).
 
-3. OUTPUT
-   - STATE: A running Firecracker Process (OS PID).
-   - REGISTRY: A tracked entry in the Daemon (Mapping ID to PID and Host Paths).
-   - RESULT: Success/Failure status returned to the caller.
+  update            Pull the latest daemon binary from the Manager and restart safely.
 
-   # --- MANAGEMENT COMMANDS ---
+  version           Print the daemon binary version and compiled Go version.
 
-COMMAND: terminate
-- INPUT: Unique VM Identifier (ID).
-- ACTION: Stops the Firecracker process and deallocates assigned host resources (TAP, Workspace).
-- OUTPUT: Confirmation of process removal and host cleanup.
+MICRO-VM CORE COMMANDS (Data Plane):
+  spawn             Create and boot a new MicroVM, attaching it to the mesh network.
+                    Flags:
+                      --id        Unique name/ID for the VM (e.g., web-01)
+                      --config    Path to a specific VM YAML config (overrides daemon defaults)
+                      --vcpu      Number of virtual CPUs (overrides config)
+                      --mem       Memory in MB (overrides config)
+                      --kernel    Path to kernel binary (overrides config)
+                      --rootfs    Path to root filesystem (overrides config)
 
-COMMAND: list
-- INPUT: Optional status filters.
-- ACTION: Scans the active registry and host process table.
-- OUTPUT: A collection of managed IDs, their PIDs, and their API Socket paths.
+  terminate         Gracefully shutdown a MicroVM and destroy its TAP interface.
+                    Usage: microd terminate <vm-id>
+                    Flags:
+                      -f, --force Send hard SIGKILL to the Firecracker process
 
-COMMAND: inspect
-- INPUT: Unique VM Identifier (ID).
-- ACTION: Aggregates host-level metadata including uptime, configuration sources, and file paths.
-- OUTPUT: A detailed manifest of the host-side state for that specific process.
+OBSERVABILITY & DEBUGGING COMMANDS:
+  list              List all MicroVMs currently managed by this daemon (Queries SQLite).
+                    Flags:
+                      --limit     Max number of VMs to show (Default: 50)
+                      --status    Filter by status (running, stopped, crashed)
+                      --filter    Regex/wildcard to filter by VM ID (e.g., "web-*")
 
-# --- DATA COMMANDS ---
+  inspect           Output detailed JSON state of a specific MicroVM (PID, IPs, MAC, uptime).
+                    Usage: microd inspect <vm-id>
 
-COMMAND: logs
-- INPUT: Unique VM Identifier (ID).
-- ACTION: Accesses and reads the associated log file from the host filesystem.
-- OUTPUT: A stream of internal process events.
+  logs              Stream the console output of the guest OS inside the MicroVM.
+                    Usage: microd logs <vm-id>
+                    Flags:
+                      -f, --follow  Keep streaming logs live
+                      --tail        Number of lines to show (Default: 50)
 
-COMMAND: metrics
-- INPUT: Unique VM Identifier (ID).
-- ACTION: Accesses and reads the associated metrics file from the host filesystem.
-- OUTPUT: A point-in-time snapshot of process performance data (JSON).
+  metrics           Print the internal Firecracker performance metrics (CPU faults, API errors).
+                    Usage: microd metrics <vm-id>
 
-# --- INTERACTION COMMANDS ---
-
-COMMAND: call
-- INPUT: ID, HTTP Method, API Endpoint, and optional Request Body.
-- ACTION: Forwards the raw request to the specific Unix Domain Socket.
-- OUTPUT: The raw response returned directly from the Firecracker API.
+  api               Send raw HTTP requests directly to a specific Firecracker Unix socket.
+                    Usage: microd api <vm-id> [GET|PUT|PATCH] <endpoint> [body]
+                    Example: microd api web-01 GET /machine-config

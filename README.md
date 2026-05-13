@@ -1,5 +1,15 @@
 # 🔥 Crackerbox
 
+> [!WARNING]
+> **PROJECT ABANDONED / FROZEN**
+> This project has been paused as of its last commit.
+> 
+> **Future Directives:**
+> If this project is picked up again in the future, **start it fresh**. Do not try to understand and continue the existing codebase. The ideas should be re-implemented according to the best practices and requirements of that time. 
+> - Do not follow any of the existing files, architecture, or commands.
+> - Focus purely on **micro VM orchestration** and **daemon architecture**.
+> - Build it from scratch based on the original vision.
+
 > A lightweight control plane for [Firecracker](https://github.com/firecracker-microvm/firecracker) microVMs.
 
 ## Architecture

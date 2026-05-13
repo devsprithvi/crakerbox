@@ -1,38 +1,70 @@
-# Crackerbox — Unified Build System
-# ──────────────────────────────────
+# Matchbox — Unified Build System
+# ─────────────────────────────────
 
-VERSION   ?= 0.1.0-dev
-COMMIT    := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+VERSION    ?= 0.1.0-dev
+COMMIT     := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 BUILD_DATE := $(shell date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || echo "unknown")
 
-DAEMON_LDFLAGS  := -s -w -X crackerboxd/cmd.Version=$(VERSION) -X crackerboxd/cmd.GitCommit=$(COMMIT) -X crackerboxd/cmd.BuildDate=$(BUILD_DATE)
-MANAGER_LDFLAGS := -s -w -X github.com/devsprithvi/crakerbox/apps/manager/cmd.Version=$(VERSION) -X github.com/devsprithvi/crakerbox/apps/manager/cmd.GitCommit=$(COMMIT) -X github.com/devsprithvi/crakerbox/apps/manager/cmd.BuildDate=$(BUILD_DATE)
+# ── Component directories ────────────────────────────────────────────
+AGENT_DIR      := apps/matchbox-agent
+MANAGER_DIR    := apps/matchbox-manager
+CONTROLLER_DIR := apps/matchbox-controller
+APISERVER_DIR  := apps/matchbox-apiserver
+DATABASE_DIR   := apps/matchbox-database
 
-.PHONY: all build build-daemon build-manager clean test help
+# ── Linker flags ─────────────────────────────────────────────────────
+LDFLAGS := -s -w \
+	-X main.Version=$(VERSION) \
+	-X main.GitCommit=$(COMMIT) \
+	-X main.BuildDate=$(BUILD_DATE)
+
+.PHONY: all build clean test help \
+	build-agent build-manager build-controller build-apiserver build-database
 
 ## Build all binaries
 all: build
 
 ## Build all Go binaries
-build: build-daemon build-manager
+build: build-agent build-manager build-controller build-apiserver build-database
 	@echo "✅ All binaries built successfully"
 
-## Build crackerboxd (daemon + node CLI)
-build-daemon:
-	@echo "🔥 Building crackerboxd..."
-	cd apps/matchboxd && go build -ldflags "$(DAEMON_LDFLAGS)" -o ../../bin/crackerboxd .
+## Build matchbox-agent (worker node)
+build-agent:
+	@echo "🔧 Building matchbox-agent..."
+	cd $(AGENT_DIR) && go build -ldflags "$(LDFLAGS)" -o ../../bin/matchbox-agent .
 
-## Build crackerbox-manager (orchestrator + cluster CLI)
+## Build matchbox-manager (cluster lifecycle)
 build-manager:
-	@echo "🔥 Building crackerbox-manager..."
-	cd apps/manager && go build -ldflags "$(MANAGER_LDFLAGS)" -o ../../bin/crackerbox-manager .
+	@echo "🔧 Building matchbox-manager..."
+	cd $(MANAGER_DIR) && go build -ldflags "$(LDFLAGS)" -o ../../bin/matchbox-manager .
+
+## Build matchbox-controller (cluster access & control)
+build-controller:
+	@echo "🔧 Building matchbox-controller..."
+	cd $(CONTROLLER_DIR) && go build -ldflags "$(LDFLAGS)" -o ../../bin/matchbox-controller .
+
+## Build matchbox-apiserver (cluster-internal API server)
+build-apiserver:
+	@echo "🔧 Building matchbox-apiserver..."
+	cd $(APISERVER_DIR) && go build -ldflags "$(LDFLAGS)" -o ../../bin/matchbox-apiserver .
+
+## Build matchbox-database (cluster-internal database)
+build-database:
+	@echo "🔧 Building matchbox-database..."
+	cd $(DATABASE_DIR) && go build -ldflags "$(LDFLAGS)" -o ../../bin/matchbox-database .
 
 ## Run all tests
 test:
-	@echo "🧪 Testing crackerboxd..."
-	cd apps/matchboxd && go test -v ./...
-	@echo "🧪 Testing crackerbox-manager..."
-	cd apps/manager && go test -v ./...
+	@echo "🧪 Testing matchbox-agent..."
+	cd $(AGENT_DIR) && go test -v ./...
+	@echo "🧪 Testing matchbox-manager..."
+	cd $(MANAGER_DIR) && go test -v ./...
+	@echo "🧪 Testing matchbox-controller..."
+	cd $(CONTROLLER_DIR) && go test -v ./...
+	@echo "🧪 Testing matchbox-apiserver..."
+	cd $(APISERVER_DIR) && go test -v ./...
+	@echo "🧪 Testing matchbox-database..."
+	cd $(DATABASE_DIR) && go test -v ./...
 	@echo "✅ All tests passed"
 
 ## Clean build artifacts
@@ -42,13 +74,18 @@ clean:
 
 ## Show help
 help:
-	@echo "Crackerbox Build System"
-	@echo "━━━━━━━━━━━━━━━━━━━━━━"
+	@echo "Matchbox Build System"
+	@echo "━━━━━━━━━━━━━━━━━━━━"
 	@echo ""
-	@echo "  make build          Build all binaries → bin/"
-	@echo "  make build-daemon   Build crackerboxd (daemon + node CLI)"
-	@echo "  make build-manager  Build crackerbox-manager (orchestrator + cluster CLI)"
-	@echo "  make test           Run all tests"
-	@echo "  make clean          Remove build artifacts"
+	@echo "  make build              Build all binaries → bin/"
+	@echo ""
+	@echo "  make build-agent        Build matchbox-agent       (worker node)"
+	@echo "  make build-manager      Build matchbox-manager     (cluster lifecycle)"
+	@echo "  make build-controller   Build matchbox-controller  (cluster access)"
+	@echo "  make build-apiserver    Build matchbox-apiserver   (cluster-internal)"
+	@echo "  make build-database     Build matchbox-database    (cluster-internal)"
+	@echo ""
+	@echo "  make test               Run all tests"
+	@echo "  make clean              Remove build artifacts"
 	@echo ""
 	@echo "Outputs go to bin/ directory"
